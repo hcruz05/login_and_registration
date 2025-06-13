@@ -31,6 +31,7 @@ const int MAX_USERS = 100;
 User* users[MAX_USERS];
 int userCount = 0;
 
+
 // Loads users from users.txt to users array
 void loadUsers()
 {
@@ -68,7 +69,6 @@ void loadUsers()
 }
 
  // Saves users to users.txt
-
 void saveUsers()
 {
     ofstream file("users.txt", ios::trunc);
@@ -82,7 +82,6 @@ void saveUsers()
 }
 
 // Checks if username exists already
-
 int findUserIndex(const string& username)
 {
     for (int i = 0; i < userCount; i++)
@@ -95,8 +94,14 @@ int findUserIndex(const string& username)
     return -1;
 }
 
-// Register new user with a username (no spaces) and password (spaces allowed)
+// Removes input buffers
+void removeInputBuffer()
+{
+    char c;
+    while (cin.get(c) && c != '\n');
+}
 
+// Register new user with a username (no spaces) and password (spaces allowed)
 void registerUser()
 {
     string username;
@@ -108,11 +113,15 @@ void registerUser()
     while (true)
     {
         cout << "Enter a username: ";
-        cin >> username;
+        getline(cin, username);
 
         if (username.find(' ') != string::npos)
         {
             cout << "Error: Username cannot contain spaces.\n";
+        }
+        else if (username.empty())
+        {
+            cout << "Error: Username cannot be empty.\n";
         }
         else if (findUserIndex(username) != -1)
         {
@@ -123,8 +132,6 @@ void registerUser()
             break;
         }
     }
-
-    cin.ignore(); // Removes line buffer
 
     cout << "Enter a password (spaces allowed): ";
     getline(cin, password);
@@ -142,7 +149,6 @@ void registerUser()
 }
 
 // Login by checking username and password
-
 int loginUser()
 {
     string username;
@@ -150,7 +156,7 @@ int loginUser()
 
     cout << "\n=== Login ===\n";
     cout << "Enter username: ";
-    cin >> username;
+    getline(cin, username);
 
     // Checks if username exists in file
     int index = findUserIndex(username);
@@ -160,8 +166,6 @@ int loginUser()
         cout << "Error: Username does not exist.\n";
         return -1;
     }
-
-    cin.ignore(); // Removes line buffer
 
     cout << "Enter password: ";
     getline(cin, password);
@@ -179,15 +183,12 @@ int loginUser()
 }
 
 // Allows user to change password
-
 void changePassword(int index)
 {
     string newPassword;
 
     cout << "\n=== Change Password ===\n";
     cout << "Enter new password: ";
-
-    cin.ignore(); // Removes line buffer
 
     getline(cin, newPassword);
 
@@ -197,7 +198,6 @@ void changePassword(int index)
 }
 
 // Deletes currently logged-in user
-
 void deleteUser(int index)
 {
     cout << "\n=== Delete Account ===\n";
@@ -213,6 +213,19 @@ void deleteUser(int index)
     userCount--;
     saveUsers();
 }
+
+// function to delete all users created when prompted in main function, otherwise this does nothing
+void deleteAllUsers()
+{
+    for (int i = 0; i < userCount; i++)
+    {
+        delete users[i];
+    }
+    userCount = 0;
+    saveUsers(); // saves an empty file
+    cout << "All user accounts deleted.\n";
+}
+
 
 /*
  * Main program. Allows user to choose to register, login, or exit
@@ -231,6 +244,7 @@ int main()
         cout << "3. Exit\n";
         cout << "Enter your choice: ";
         cin >> choice;
+        removeInputBuffer();
 
         switch (choice)
         {
@@ -254,6 +268,7 @@ int main()
                         cout << "3. Logout\n";
                         cout << "Enter your choice: ";
                         cin >> subChoice;
+                        removeInputBuffer();
 
                         switch (subChoice)
                         {
@@ -265,7 +280,7 @@ int main()
                             case 2:
                             {
                                 deleteUser(index);
-                                subChoice = 3; // auto-logout after deletion
+                                subChoice = 3; // logouts after deletion
                                 break;
                             }
                             case 3:
@@ -284,7 +299,7 @@ int main()
             }
             case 3:
             {
-                cout << "Progrma complete!\n";
+                cout << "Program complete!\n";
                 // Deletes the memory created and closes program
                 for (int i = 0; i < userCount; i++)
                 {
